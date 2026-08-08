@@ -1,0 +1,30 @@
+name: Check Buy/Sell Signals
+
+on:
+  schedule:
+    # Chạy 3 phút sau mỗi lần đóng nến 4H (00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC)
+    - cron: "3 0,4,8,12,16,20 * * *"
+  workflow_dispatch: {}   # cho phép bấm "Run workflow" để test thủ công
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run signal checker
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SYMBOLS: ${{ vars.SYMBOLS }}
+          INTERVAL: ${{ vars.INTERVAL }}
+        run: python signal_checker.py
